@@ -157,6 +157,7 @@ module Copt::App
     #
     def initialize(arguments = ARGV)
       parse arguments.dup
+      @status = :initialized
     end
 
     #
@@ -167,11 +168,49 @@ module Copt::App
     end
 
     #
-    # Runs this app instance, executing whatever command was invoked.
+    # When called with no arguments, it runs this app instance, executing
+    # whatever command was invoked.
     #
-    def run
-      check_errors
+    # However, this method can be used to invoke another command explicitly, by
+    # providing its name as an argument, along with an optional hash.  This can
+    # only be done while the main app logic is running, making it possible for
+    # a command to be able to call other commands within its own block of code.
+    #
+    # When used in this fashion, the hash supports three different optional
+    # arguments controlling the nested subcommand invocation:
+    #
+    # hash[:arr] - An array of arguments to provide to the command being
+    #   invoked.  If omitted, the command will be invoked with the same list
+    #   of arguments of the invoking command.
+    #
+    # hash[:opts] - A hash of options to provide to the command being invoked.
+    #   If omitted, the command will be invoked with the same set of options of
+    #   the invoking command.
+    #
+    # hash[:check] - A boolean flag indicating if the invoked subcommand should
+    #   check its preconditions and other error conditions, or not.  This flag
+    #   is assumed to be true unless explicitly stated to be false, thus
+    #   bypassing error checking.
+    #
+    def run(command_name = nil, hash = nil)
+      if command_name
+        raise Copt::Error, "Cannot invoke commands if app is not running" unless @status == :running
+        hash ||= {}
+        push(command_name, hash)
+      else
+        raise Copt::Error, "App cannot be run more than once" unless @status == :initialized
+        @status = :running
+      end
+
+      check_errors unless hash && hash.fetch(:check, true) == false
       instance_eval(&@command.block)
+
+      if command_name
+        pop
+      else
+        @status = :finished
+      end
+
       self
     end
 
@@ -277,6 +316,34 @@ module Copt::App
 
     def errors
       @errors ||= []
+    end
+
+    def push(command_name, hash)
+      new_command = commands[command_name.to_sym]
+      raise Copt::Error, "Unknow command name '#{command_name}'" if new_command.nil?
+
+      @stack ||= []
+      @stack.push({
+        command: @command,
+        opts: @opts,
+        args: @args,
+        errors: @errors,
+      })
+
+      @command = new_command
+      @opts = hash[:opts] || @opts
+      @args = hash[:args] || @args
+      @errors = []
+    end
+
+    def pop
+      raise Copt::Error, "Internal copt stack empty" if @stack.nil? || @stack.empty?
+      top = @stack.pop
+      @command = top[:command]
+      @opts = top[:opts]
+      @args = top[:args]
+      @errors = top[:errors]
+      top
     end
   end
 

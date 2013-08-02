@@ -192,4 +192,36 @@ describe Copt do
       end
     end
   end
+
+  describe "nested subcommand invocation" do
+    def nested_caller(name = :nest, &block)
+      TestApp.cmd(name, 'Calls other commands') { TestApp.run(&block) }
+    end
+
+    it "works" do
+      nested_caller { run(:show) }
+      TestApp.run! %w(nest)
+      expect(TestApp.footprint).to eq('Showing...')
+    end
+
+    it "allows to provide different arguments and options to the invoked command" do
+      # The nested subcommand is instructed to skip error checks, so it won't fail.
+      nested_caller(:nest1) { run(:list, check: false) }
+      TestApp.run! %w(nest1 one two three)
+      expect(TestApp.footprint).to eq('Listing...')
+      TestApp.footprint = nil
+
+      # The nested subcommand is explicitly given no arguments, so it won't fail.
+      nested_caller(:nest2) { run(:list, args: []) }
+      TestApp.run! %w(nest2 one two three)
+      expect(TestApp.footprint).to eq('Listing...')
+      TestApp.footprint = nil
+
+      # The nested subcommand refuses to receive arguments so it fails
+      nested_caller(:nest3) { run(:list) }
+      expect { TestApp.run! %w(nest3 one two three) }.to raise_error(SystemExit)
+      expect(TestApp.footprint).not_to eq('Listing...')
+      TestApp.footprint = nil
+    end
+  end
 end
