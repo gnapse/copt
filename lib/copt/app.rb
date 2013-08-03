@@ -272,6 +272,7 @@ module Copt::App
     def process_argument(str)
       if @args.empty? && @command.nil? && command?(str) && !@all_args
         @command = commands[str.to_sym]
+        @opts = @command.default_option_values.merge(@opts)
       else
         @args << str
       end

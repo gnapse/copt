@@ -45,6 +45,16 @@ module Copt
       @preconditions << [message, block]
     end
 
+    def default_option_values
+      unless @default_option_values
+        @default_option_values = {}
+        @options.each_pair do |name, opt|
+          @default_option_values[name] = opt.default if opt.default
+        end
+      end
+      @default_option_values
+    end
+
     private
 
     def dup(str, hash)

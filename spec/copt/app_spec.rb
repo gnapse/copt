@@ -130,6 +130,11 @@ describe Copt::App do
       expect(app.opts).to eq(ignore_cache: false)
     end
 
+    it 'leaves options at their default value when omitted' do
+      app = SampleApp.run! %w(complex file.txt --num-lines 43)
+      expect(app.opts).to eq(dest: ENV['HOME'], num_lines: 43, since: Date.new(2000, 1, 1))
+    end
+
     it 'fails when a negative option form does not correspond to a flag option' do
       expect { SampleApp.run! %w(complex --no-dest) }.to raise_error(SystemExit)
       expect { SampleApp.run! %w(complex --no-quiet) }.not_to raise_error
