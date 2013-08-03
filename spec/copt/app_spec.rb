@@ -112,7 +112,7 @@ describe Copt::App do
     end
   end
 
-  describe '.run!' do
+  describe 'parsing command line arguments' do
     it "recognizes options and arguments passed on the command line" do
       app = SampleApp.run! %w(show one --ignore-cache two three -ps)
       expect(app.args).to eq(%w(one two three))
@@ -155,7 +155,9 @@ describe Copt::App do
       expect(app.command).to eq(:list)
       expect(SampleApp.footprint).to eq('Listing...')
     end
+  end
 
+  describe '.run!' do
     it "checks all the subcommand's preconditions, if any" do
       expect { SampleApp.run! %w(list hello) }.to raise_error(SystemExit)
     end
