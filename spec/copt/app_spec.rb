@@ -125,6 +125,16 @@ describe Copt::App do
       expect(app.opts).to eq(quiet: true, dest: '~/tmp', num_lines: 10, since: Date.new(2011, 11, 11))
     end
 
+    it 'recognizes flag options in negative form correctly' do
+      app = SampleApp.run! %w(show one --no-ignore-cache)
+      expect(app.opts).to eq(ignore_cache: false)
+    end
+
+    it 'fails when a negative option form does not correspond to a flag option' do
+      expect { SampleApp.run! %w(complex --no-dest) }.to raise_error(SystemExit)
+      expect { SampleApp.run! %w(complex --no-quiet) }.not_to raise_error
+    end
+
     it "recognizes the '--' argument marker properly" do
       app = SampleApp.run! %w(show one --pager -- two three -rs)
       expect(app.args).to eq(%w(one two three -rs))

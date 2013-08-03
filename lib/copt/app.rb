@@ -280,6 +280,9 @@ module Copt::App
     def process_option(str)
       if str.start_with?('---')
         errors << "Invalid option '#{str}'"
+      elsif str.start_with?('--no-')
+        option = str.sub(/\A--no-/, '').gsub('-', '_').to_sym
+        add_option(option, :negative)
       elsif str.start_with?('--')
         option = str.sub(/\A--/, '').gsub('-', '_').to_sym
         add_option(option)
@@ -288,12 +291,12 @@ module Copt::App
         if str.length == 1
           add_option(str.to_sym)
         else
-          str.each_char { |c| add_option(c.to_sym, true) }
+          str.each_char { |c| add_option(c.to_sym, :flag) }
         end
       end
     end
 
-    def add_option(option_name, force_flag = false)
+    def add_option(option_name, mode = nil)
       option = global_options[option_name]
       option = @command.options[option_name] if @command && option.nil?
 
@@ -302,13 +305,18 @@ module Copt::App
         return
       end
 
-      if force_flag && option.type != :flag
+      if mode == :negative && option.type != :flag
+        errors << "Invalid option '--no-#{option_name}'"
+        return
+      end
+
+      if mode == :flag && option.type != :flag
         errors << "Can't accept option '#{option_name}' without an argument"
         return
       end
 
       if option.type == :flag
-        @opts[option.name] = true
+        @opts[option.name] = (mode != :negative)
       else
         @opts[option.name] = option.parse_value(@arguments.shift)
       end
