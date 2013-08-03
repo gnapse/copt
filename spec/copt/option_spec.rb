@@ -34,6 +34,12 @@ describe Copt::Option do
       expect(opt.type).to eq(:date)
     end
 
+    it 'supports default values provided as a block of code' do
+      opt = new_option(:first, default: proc { 2 + 2 })
+      expect(opt.default).to eq(4)
+      expect(opt.type).to eq(:int)
+    end
+
     it 'fails if default value conflicts with type' do
       expect_success { new_option(:first, default: 0, type: Integer) }
       expect_success { new_option(:second, default: 0.0, type: Float) }

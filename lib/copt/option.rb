@@ -7,6 +7,7 @@ module Copt
       @description = description
 
       @default = extra[:default]
+      @default = @default.call if @default.is_a?(Proc)
       @type = normalized_type(extra[:type])
       type_from_default = type_for(@default)
       if @type && type_from_default && @type != type_from_default

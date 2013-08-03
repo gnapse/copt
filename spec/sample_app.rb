@@ -24,7 +24,7 @@ class SampleApp
     cmd :complex, 'Complex command' do
       opt :dest, 'The destination folder', type: String, default: ENV['HOME']
       opt :num_lines, 'The number of lines to process', default: 0
-      opt :since, 'The date where processing should start', type: Date
+      opt :since, 'The date where processing should start', default: proc { Date.new(2000, 01, 01) }
       opt :quiet, 'Do not print out any output'
       run { _puts opts }
     end
