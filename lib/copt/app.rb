@@ -251,12 +251,13 @@ module Copt::App
     #
     def parse(arguments)
       return if @parsed
+      @arguments = arguments
       @command = nil
       @args = []
       @opts = {}
       @all_args = false
-      until arguments.empty?
-        s = arguments.shift
+      until @arguments.empty?
+        s = @arguments.shift
         if s =~ /\A-+\z/ && !@all_args
           @all_args = true
         elsif s.start_with?('-') && !@all_args
@@ -284,17 +285,32 @@ module Copt::App
         add_option(option)
       else # options starts with a single '-'
         str = str.sub(/\A-/, '')
-        str.each_char { |c| add_option(c.to_sym) }
+        if str.length == 1
+          add_option(str.to_sym)
+        else
+          str.each_char { |c| add_option(c.to_sym, true) }
+        end
       end
     end
 
-    def add_option(opt)
-      option = global_options[opt]
-      option = @command.options[opt] if @command && option.nil?
-      if option
+    def add_option(option_name, force_flag = false)
+      option = global_options[option_name]
+      option = @command.options[option_name] if @command && option.nil?
+
+      unless option
+        errors << "Invalid option '#{option_name}'"
+        return
+      end
+
+      if force_flag && option.type != :flag
+        errors << "Can't accept option '#{option_name}' without an argument"
+        return
+      end
+
+      if option.type == :flag
         @opts[option.name] = true
       else
-        errors << "Invalid option '#{opt}'"
+        @opts[option.name] = option.parse_value(@arguments.shift)
       end
     end
 

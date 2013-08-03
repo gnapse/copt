@@ -21,6 +21,14 @@ class SampleApp
       run { _puts 'Listing...' }
     end
 
+    cmd :complex, 'Complex command' do
+      opt :dest, 'The destination folder', type: String, default: ENV['HOME']
+      opt :num_lines, 'The number of lines to process', default: 0
+      opt :since, 'The date where processing should start', type: Date
+      opt :quiet, 'Do not print out any output'
+      run { _puts opts }
+    end
+
     self.footprint = 'Nothing'
   end
 

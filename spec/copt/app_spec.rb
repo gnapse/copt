@@ -119,6 +119,12 @@ describe Copt::App do
       expect(app.opts).to eq(pager: true, summary: true, ignore_cache: true)
     end
 
+    it 'processes non-flag options and their values correctly' do
+      app = SampleApp.run! %w(complex --dest ~/tmp --quiet file.txt --num-lines 10 --since 2011-11-11)
+      expect(app.args).to eq(%w(file.txt))
+      expect(app.opts).to eq(quiet: true, dest: '~/tmp', num_lines: 10, since: Date.new(2011, 11, 11))
+    end
+
     it "recognizes the '--' argument marker properly" do
       app = SampleApp.run! %w(show one --pager -- two three -rs)
       expect(app.args).to eq(%w(one two three -rs))

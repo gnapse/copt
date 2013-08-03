@@ -7,7 +7,7 @@ module Copt
       @description = description
 
       @default = extra[:default]
-      @type = extra[:type]
+      @type = normalized_type(extra[:type])
       type_from_default = type_for(@default)
       if @type && type_from_default && @type != type_from_default
         raise Copt::Error, "Conflict between type of default value and explicit :type for option '#{name}'"
@@ -33,7 +33,37 @@ module Copt
       @command.app
     end
 
+    def parse_value(value)
+      case type
+      when :int then parse_int(value)
+      when :float then parse_float(value)
+      when :date then parse_date(value)
+      when :string then value.to_s
+      else
+        raise Copt::Error, "Option type '#{type}' not supported."
+      end
+    end
+
     private
+
+    # Regex for floating point numbers
+    FLOAT_RE = /^-?((\d+(\.\d+)?)|(\.\d+))([eE][-+]?[\d]+)?$/
+
+    def parse_int(value)
+      raise Copt::Error, "Option '#{name}' expects an integer" unless value =~ /\A\d+\z/
+      value.to_i
+    end
+
+    def parse_float(value)
+      raise Copt::Error, "Option '#{name}' expects a float number" unless value =~ FLOAT_RE
+      value.to_f
+    end
+
+    def parse_date(value)
+      Date.parse(value)
+    rescue ArgumentError
+      raise Copt::Error, "Option '#{name}' expects a date"
+    end
 
     def normalized_type(type)
       case type
