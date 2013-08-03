@@ -34,7 +34,7 @@ class TestApp
   end
 end
 
-describe Copt do
+describe Copt::App do
   before(:each) { TestApp.reset }
 
   let(:commands) { TestApp.send :commands }
