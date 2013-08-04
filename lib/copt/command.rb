@@ -48,8 +48,8 @@ module Copt
     def default_option_values
       unless @default_option_values
         @default_option_values = {}
-        @options.each_pair do |name, opt|
-          @default_option_values[name] = opt.default if opt.default
+        @options.values.uniq.each do |opt|
+          @default_option_values[opt.name] = opt.default if opt.default
         end
       end
       @default_option_values
