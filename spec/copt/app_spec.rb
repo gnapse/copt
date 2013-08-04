@@ -5,7 +5,6 @@ describe Copt::App do
   before(:each) { SampleApp.reset }
 
   let(:commands) { SampleApp.send :commands }
-  let(:current_command) { SampleApp.instance_variable_get(:@command) }
 
   def expect_failure(&block)
     expect(&block).to change(SampleApp.errors, :size).by(1)
@@ -16,9 +15,9 @@ describe Copt::App do
   end
 
   def command_context
-    SampleApp.command(:edit, 'desc') do
-      yield
-      SampleApp.run {}
+    SampleApp.command(:edit, 'desc') do |c|
+      yield c
+      SampleApp.run {} if c.block.nil?
     end
   end
 
@@ -58,8 +57,8 @@ describe Copt::App do
 
   describe '.option' do
     it 'defines a new option for the current command' do
-      command_context do
-        expect { SampleApp.option :name, 'desc' }.to change(current_command.options, :size).by(1)
+      command_context do |c|
+        expect { SampleApp.option :name, 'desc' }.to change(c.options, :size).by(1)
       end
     end
 
@@ -83,8 +82,8 @@ describe Copt::App do
 
   describe '.check' do
     it 'sets a condition that must be checked upon execution of the command' do
-      command_context do
-        expect { SampleApp.check('Message') { true } }.to change(current_command.preconditions, :size).by(1)
+      command_context do |c|
+        expect { SampleApp.check('Message') { true } }.to change(c.preconditions, :size).by(1)
       end
     end
 
@@ -97,15 +96,15 @@ describe Copt::App do
 
   describe '.run' do
     it 'defines the block of code to execute for the current command' do
-      SampleApp.command :edit, 'desc' do
-        expect(current_command.block).to be_nil
+      command_context do |c|
+        expect(c.block).to be_nil
         SampleApp.run {}
-        expect(current_command.block).not_to be_nil
+        expect(c.block).not_to be_nil
       end
     end
 
     it 'does not allow to be called more than once per command' do
-      SampleApp.command :edit, 'description' do
+      command_context do
         expect_success { SampleApp.run {} }
         expect_failure { SampleApp.run {} }
       end

@@ -24,7 +24,7 @@ module Copt::App
       raise Copt::Error, "Duplicate command '#{name}'" if commands.has_key?(name)
 
       @command = Copt::Command.new(self, name, description)
-      yield
+      yield @command
 
       if @command.block.nil?
         raise Copt::Error, "Command '#{name}' has no run block."
