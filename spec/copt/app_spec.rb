@@ -37,19 +37,19 @@ describe Copt::App do
   end
 
   describe '.command' do
-    it "defines a new command" do
+    it 'defines a new command' do
       expect {
         SampleApp.command(:edit, 'desc') { SampleApp.run {} }
       }.to change(commands, :length).by(1)
     end
 
-    it "fails in case of duplicate command name" do
+    it 'fails in case of duplicate command name' do
       expect_failure do
         SampleApp.command(:show, 'description') { SampleApp.run {} }
       end
     end
 
-    it "fails if no execution block is defined for the command" do
+    it 'fails if no execution block is defined for the command' do
       expect_failure do
         SampleApp.command(:edit, 'desc') {}
       end
@@ -57,13 +57,13 @@ describe Copt::App do
   end
 
   describe '.option' do
-    it "defines a new option for the current command" do
+    it 'defines a new option for the current command' do
       command_context do
         expect { SampleApp.option :name, 'desc' }.to change(current_command.options, :size).by(1)
       end
     end
 
-    it "fails in case of duplicate option keys" do
+    it 'fails in case of duplicate option keys' do
       command_context do
         expect_success { SampleApp.option :name, 'description', short: 'n', long: 'long' }
         expect_failure { SampleApp.option :none, 'description', short: 'n' }
@@ -72,7 +72,7 @@ describe Copt::App do
       end
     end
 
-    it "fails when option keys are invalid" do
+    it 'fails when option keys are invalid' do
       command_context do
         expect_failure { SampleApp.option :n, 'description' }
         expect_failure { SampleApp.option :one, 'description', short: 'long' }
@@ -96,7 +96,7 @@ describe Copt::App do
   end
 
   describe '.run' do
-    it "defines the block of code to execute for the current command" do
+    it 'defines the block of code to execute for the current command' do
       SampleApp.command :edit, 'desc' do
         expect(current_command.block).to be_nil
         SampleApp.run {}
@@ -104,7 +104,7 @@ describe Copt::App do
       end
     end
 
-    it "does not allow to be called more than once per command" do
+    it 'does not allow to be called more than once per command' do
       SampleApp.command :edit, 'description' do
         expect_success { SampleApp.run {} }
         expect_failure { SampleApp.run {} }
@@ -113,7 +113,7 @@ describe Copt::App do
   end
 
   describe 'parsing command line arguments' do
-    it "recognizes options and arguments passed on the command line" do
+    it 'recognizes options and arguments passed on the command line' do
       app = SampleApp.run! %w(show one --ignore-cache two three -ps)
       expect(app.args).to eq(%w(one two three))
       expect(app.opts).to eq(pager: true, summary: true, ignore_cache: true)
@@ -143,10 +143,10 @@ describe Copt::App do
     it "recognizes the '--' argument marker properly" do
       app = SampleApp.run! %w(show one --pager -- two three -rs)
       expect(app.args).to eq(%w(one two three -rs))
-      expect(app.opts).to eq({pager: true})
+      expect(app.opts).to eq(pager: true)
     end
 
-    it "recognizes the specified subcommand and invokes the appropriate block" do
+    it 'recognizes the specified subcommand and invokes the appropriate block' do
       app = SampleApp.run! %w(show)
       expect(app.command).to eq(:show)
       expect(SampleApp.footprint).to eq('Showing...')
@@ -162,39 +162,39 @@ describe Copt::App do
       expect { SampleApp.run! %w(list hello) }.to raise_error(SystemExit)
     end
 
-    context "when invoked with the --help option" do
-      it "bypasses execution and prints the help message" do
+    context 'when invoked with the --help option' do
+      it 'bypasses execution and prints the help message' do
         expect { SampleApp.run! %w(list --help) }.to raise_error(SystemExit)
         expect(SampleApp.footprint).not_to eq('Listing...')
       end
     end
 
-    context "when invoked with an invalid subcommand name" do
-      it "should fail execution and exit" do
+    context 'when invoked with an invalid subcommand name' do
+      it 'should fail execution and exit' do
         expect { SampleApp.run! %w(edit) }.to raise_error(SystemExit)
       end
     end
 
-    context "when invoked with invalid options" do
-      it "should fail execution and exit" do
+    context 'when invoked with invalid options' do
+      it 'should fail execution and exit' do
         expect { SampleApp.run! %w(show --all) }.to raise_error(SystemExit)
         expect(SampleApp.footprint).not_to eq('Showing...')
       end
     end
   end
 
-  describe "nested subcommand invocation" do
+  describe 'nested subcommand invocation' do
     def nested_caller(name = :nest, &block)
       SampleApp.cmd(name, 'Calls other commands') { SampleApp.run(&block) }
     end
 
-    it "works" do
+    it 'works' do
       nested_caller { run(:show) }
       SampleApp.run! %w(nest)
       expect(SampleApp.footprint).to eq('Showing...')
     end
 
-    it "allows to provide different arguments and options to the invoked command" do
+    it 'allows to provide different arguments and options to the invoked command' do
       # The nested subcommand is instructed to skip error checks, so it won't fail.
       nested_caller(:nest1) { run(:list, check: false) }
       SampleApp.run! %w(nest1 one two three)
