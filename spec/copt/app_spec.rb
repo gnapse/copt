@@ -119,9 +119,14 @@ describe Copt::App do
     end
 
     it 'processes non-flag options and their values correctly' do
-      app = SampleApp.run! %w(complex --dest ~/tmp --quiet file.txt --num-lines 10 --since 2011-11-11)
+      app = SampleApp.run! %w(complex --dest . -q file.txt -n 10 --since 2011-11-11)
       expect(app.args).to eq(%w(file.txt))
-      expect(app.opts).to eq(quiet: true, dest: '~/tmp', num_lines: 10, since: Date.new(2011, 11, 11))
+      expect(app.opts).to eq({
+        quiet: true,
+        dest: '.',
+        num_lines: 10,
+        since: Date.new(2011, 11, 11)
+      })
     end
 
     it 'recognizes flag options in negative form correctly' do
