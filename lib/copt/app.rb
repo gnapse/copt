@@ -194,11 +194,11 @@ module Copt::App
     #
     def run(command_name = nil, hash = nil)
       if command_name
-        raise Copt::Error, "Cannot invoke commands if app is not running" unless @status == :running
+        raise Copt::Error, 'Cannot run commands if app is not running' unless @status == :running
         hash ||= {}
         push(command_name, hash)
       else
-        raise Copt::Error, "App cannot be run more than once" unless @status == :initialized
+        raise Copt::Error, 'App cannot be run more than once' unless @status == :initialized
         @status = :running
       end
 
@@ -362,7 +362,7 @@ module Copt::App
     end
 
     def pop
-      raise Copt::Error, "Internal copt stack empty" if @stack.nil? || @stack.empty?
+      raise Copt::Error, 'Internal copt stack empty' if @stack.nil? || @stack.empty?
       top = @stack.pop
       @command = top[:command]
       @opts = top[:opts]
