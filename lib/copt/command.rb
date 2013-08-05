@@ -9,6 +9,7 @@ module Copt
       @name = name
       @description = description
       @options = {}
+      @options_list = []
       @preconditions = []
     end
 
@@ -28,6 +29,7 @@ module Copt
       @options[opt.name] = opt
       @options[opt.long] = opt
       @options[opt.short] = opt if opt.short
+      @options_list.push(opt)
     end
 
     def has_option?(key)
@@ -48,7 +50,7 @@ module Copt
     def default_option_values
       unless @default_option_values
         @default_option_values = {}
-        @options.values.uniq.each do |opt|
+        @options_list.each do |opt|
           @default_option_values[opt.name] = opt.default if opt.default
         end
       end
