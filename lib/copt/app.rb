@@ -10,10 +10,10 @@ module Copt::App
       @config = config.dup.freeze
 
       @command = Copt::Command.new(self, nil, desc)
+      @global_command = @command
       yield if block_given?
 
       commands[nil] = @command
-      @global_command = @command
       @command = nil
     end
 
